@@ -52,7 +52,6 @@ tests/
     search.pom.spec.ts  ← Task 2: POM tests — Search for Books by Keywords
     cart.pom.spec.ts    ← Task 2: POM tests — Add Books to Shopping Cart
     filters.pom.spec.ts ← Task 2: POM tests — Navigate Products via Filters
-  fixtures.ts           ← Playwright fixture setup — injects page objects for search and filters tests
 
 pages/                  ← Task 2: Page Object Model classes
   HomePage.ts           ← home page, search, add to cart
@@ -138,8 +137,7 @@ npx playwright show-report
 Refactor your Task 1 tests to use the Page Object Model:
 
 - All locators and actions live in page classes under `pages/` — no raw selectors in test files
-- `cart.pom.spec.ts` uses `beforeAll` + `test.describe.configure({ mode: 'serial' })` because the tests share state (items added in one test are verified in the next)
-- `search.pom.spec.ts` and `filters.pom.spec.ts` use fixtures from `tests/fixtures.ts` — import `test` from there instead of `@playwright/test`
+- All POM test files use `beforeAll` + `test.describe.configure({ mode: 'serial' })`, the same pattern as `cart.pom.spec.ts`
 
 ---
 
