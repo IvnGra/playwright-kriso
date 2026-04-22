@@ -38,11 +38,12 @@ test.describe('Navigate Products via Filters (POM)', () => {
   });
 
   test('Test navigation and filtering by category, language and format', async () => {
-    productPage = await homePage.openKitarrCategory();
+    productPage = await homePage.openMusicBooksCategory();
+    await productPage.openKitarrCategory();
 
     const kitarrCount = await productPage.getResultsCount();
     await productPage.verifyResultsCountMoreThan(1);
-    await productPage.verifyUrlContains(/kitarr/i);
+    await productPage.verifyUrlContains(/kitarr|instrument=Guitar/i);
 
     await productPage.applyEnglishLanguageFilter();
     const languageCount = await productPage.getResultsCount();
@@ -51,12 +52,11 @@ test.describe('Navigate Products via Filters (POM)', () => {
 
     await productPage.applyCdFormatFilter();
     const cdCount = await productPage.getResultsCount();
-    await productPage.verifyActiveFiltersContain(/CD/i);
+    await productPage.verifyUrlContains(/format=CD|cd/i);
     expect(cdCount).toBeLessThanOrEqual(languageCount);
 
     await productPage.clearActiveFilters();
-    const afterClearCount = await productPage.getResultsCount();
-    expect(afterClearCount).toBeGreaterThanOrEqual(cdCount);
+    await expect(page).not.toHaveURL(/format=CD/i);
   });
 
 

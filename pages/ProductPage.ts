@@ -23,6 +23,7 @@ export class ProductPage extends BasePage {
     ];
 
     this.cdFilterCandidates = [
+      this.page.locator('a[href*="format=CD"]'),
       this.page.getByRole('link', { name: /^CD$/i }),
       this.page.getByText(/^CD$/i),
       this.page.locator('.itemname').filter({ hasText: /^CD$/i }),
@@ -30,8 +31,12 @@ export class ProductPage extends BasePage {
   }
 
   async getResultsCount() {
-    const resultsText = await this.resultsTotal.textContent();
-    return Number((resultsText || '').replace(/\D/g, '')) || 0;
+    try {
+      const resultsText = await this.resultsTotal.textContent({ timeout: 5000 });
+      return Number((resultsText || '').replace(/\D/g, '')) || 0;
+    } catch {
+      return await this.page.locator('.book-list .product').count();
+    }
   }
 
   async verifyResultsCountMoreThan(minCount: number) {
@@ -41,6 +46,10 @@ export class ProductPage extends BasePage {
 
   async verifyUrlContains(value: string | RegExp) {
     await expect(this.page).toHaveURL(value);
+  }
+
+  async openKitarrCategory() {
+    await this.page.getByRole('link', { name: /Kitarr/i }).first().click();
   }
 
   async applyEnglishLanguageFilter() {
@@ -61,8 +70,19 @@ export class ProductPage extends BasePage {
 
   private async clickFirstAvailable(candidates: Locator[]) {
     for (const candidate of candidates) {
-      if (await candidate.count()) {
-        await candidate.first().click();
+      const count = await candidate.count();
+      for (let i = 0; i < count; i++) {
+        const option = candidate.nth(i);
+        if (await option.isVisible()) {
+          await option.click();
+          await this.page.waitForLoadState('domcontentloaded');
+          return;
+        }
+      }
+
+      if (count > 0) {
+        await candidate.first().click({ force: true });
+        await this.page.waitForLoadState('domcontentloaded');
         return;
       }
     }

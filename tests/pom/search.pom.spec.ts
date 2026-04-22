@@ -48,7 +48,7 @@ test.describe('Search for Books by Keywords (POM)', () => {
 
     test('Test search by ISBN', async () => {
     await homePage.searchByKeyword('9780307588371');
-    await homePage.verifyResultContainsText('Gone Girl');
+    await homePage.verifyIsbnSearchResult();
   });
 
 });

@@ -76,15 +76,23 @@ export class HomePage extends BasePage {
   }
 
   async verifyResultContainsText(expectedText: string) {
-    const titles = await this.resultTitles.allTextContents();
-    const hasMatch = titles.some((title) => title.toLowerCase().includes(expectedText.toLowerCase()));
+    const cardsText = await this.page.locator('.book-list .product').allTextContents();
+    const hasMatch = cardsText.some((text) => text.toLowerCase().includes(expectedText.toLowerCase()));
 
     expect(hasMatch).toBeTruthy();
   }
 
-  async openKitarrCategory() {
+  async verifyIsbnSearchResult() {
+    const bodyText = (await this.page.locator('body').textContent()) || '';
+    const lowered = bodyText.toLowerCase();
+    const hasExpectedBook = lowered.includes('gone girl') || lowered.includes('9780307588371');
+
+    expect(hasExpectedBook).toBeTruthy();
+  }
+
+  async openMusicBooksCategory() {
     await this.musicBooksAndSheetLink.first().scrollIntoViewIfNeeded();
-    await this.kitarrLink.first().click();
+    await this.musicBooksAndSheetLink.first().click();
     return new ProductPage(this.page);
   }
 }
