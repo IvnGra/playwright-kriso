@@ -1,6 +1,7 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { CartPage } from './CartPage';
+import { ProductPage } from './ProductPage';
 
 export class HomePage extends BasePage {
   private readonly url = 'https://www.kriso.ee/';
@@ -11,6 +12,9 @@ export class HomePage extends BasePage {
   private readonly backButton: Locator;
   private readonly forwardButton: Locator;
   private readonly noResultsMessage: Locator;
+  private readonly musicBooksAndSheetLink: Locator;
+  private readonly kitarrLink: Locator;
+  private readonly resultTitles: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -21,6 +25,9 @@ export class HomePage extends BasePage {
     this.backButton = this.page.locator('.cartbtn-event.back');
     this.forwardButton = this.page.locator('.cartbtn-event.forward');
     this.noResultsMessage = this.page.locator('.msg.msg-info');
+    this.musicBooksAndSheetLink = this.page.getByRole('link', { name: 'Muusikaraamatud ja noodid' });
+    this.kitarrLink = this.page.getByRole('link', { name: /Kitarr/i });
+    this.resultTitles = this.page.locator('.book-list .product h3');
   }
 
   async openUrl() {
@@ -56,5 +63,28 @@ export class HomePage extends BasePage {
 
   async verifyNoProductsFoundMessage() {
     await expect(this.noResultsMessage).toContainText('Teie poolt sisestatud märksõnale vastavat raamatut ei leitud. Palun proovige uuesti!');
+  }
+
+  async verifySearchResultsContainKeyword(keyword: string) {
+    const titles = await this.resultTitles.allTextContents();
+    expect(titles.length).toBeGreaterThan(0);
+
+    const loweredKeyword = keyword.toLowerCase();
+    const matchingTitles = titles.filter((title) => title.toLowerCase().includes(loweredKeyword));
+
+    expect(matchingTitles.length).toBeGreaterThan(0);
+  }
+
+  async verifyResultContainsText(expectedText: string) {
+    const titles = await this.resultTitles.allTextContents();
+    const hasMatch = titles.some((title) => title.toLowerCase().includes(expectedText.toLowerCase()));
+
+    expect(hasMatch).toBeTruthy();
+  }
+
+  async openKitarrCategory() {
+    await this.musicBooksAndSheetLink.first().scrollIntoViewIfNeeded();
+    await this.kitarrLink.first().click();
+    return new ProductPage(this.page);
   }
 }

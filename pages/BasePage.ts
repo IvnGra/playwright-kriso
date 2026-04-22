@@ -14,7 +14,9 @@ export class BasePage {
   }
 
   async acceptCookies() {
-    await this.consentButton.click();
+    if (await this.consentButton.count()) {
+      await this.consentButton.first().click();
+    }
   }
 
   async verifyLogo() {
