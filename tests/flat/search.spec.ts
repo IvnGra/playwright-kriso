@@ -36,7 +36,7 @@ test.describe('Search for Books by Keywords', () => {
 
   test('Test no products found', async () => {
     await page.locator('#top-search-text').click();
-    await page.locator('#top-search-text').fill('jaslkfjalskjdkls');
+    await page.locator('#top-search-text').fill('xqzwmfkj');
     await page.locator('#top-search-btn-wrap').click();
 
     await expect(page.locator('.msg.msg-info')).toContainText('Teie poolt sisestatud märksõnale vastavat raamatut ei leitud. Palun proovige uuesti!');
@@ -47,7 +47,16 @@ test.describe('Search for Books by Keywords', () => {
     await page.locator('#top-search-text').fill('tolkien');
     await page.locator('#top-search-btn-wrap').click();
 
-    //TODO check results contain keyword
+    const resultsText = await page.locator('.sb-results-total').textContent();
+    const total = Number((resultsText || '').replace(/\D/g, '')) || 0;
+    expect(total).toBeGreaterThan(1);
+
+    const resultTitles = await page.locator('.book-list .product h3').allTextContents();
+    expect(resultTitles.length).toBeGreaterThan(0);
+
+    for (const title of resultTitles.slice(0, 10)) {
+      expect(title.toLowerCase()).toContain('tolkien');
+    }
   });
 
     test('Test search by ISBN', async () => {
@@ -55,7 +64,10 @@ test.describe('Search for Books by Keywords', () => {
     await page.locator('#top-search-text').fill('9780307588371');
     await page.locator('#top-search-btn-wrap').click();
 
-    //TODO check correct book is shown
+    const resultTitles = await page.locator('.book-list .product h3').allTextContents();
+    const hasGoneGirl = resultTitles.some((title) => title.toLowerCase().includes('gone girl'));
+
+    expect(hasGoneGirl).toBeTruthy();
   });
 
 });
